@@ -27,7 +27,7 @@ function Pomodoro() {
   useEffect(() => {
     async function fetchTasks() {
       try {
-        const response = await axios.post("http://localhost:5000/tasks");
+        const response = await axios.post("https://notion-pomodoro-1.onrender.com/tasks");
         setTasks(response.data);
       } catch (err) {
         console.error("Error fetching Notion tasks:", err);
@@ -118,7 +118,7 @@ function Pomodoro() {
 
   async function incrementPomodoroForTask(pageId, newFinishedValue) {
     try {
-      await axios.patch(`http://localhost:5000/update-task/${pageId}`, {
+      await axios.patch("https://notion-pomodoro-1.onrender.com/update-task/${pageId}", {
         finished: newFinishedValue,
       });
     } catch (err) {
