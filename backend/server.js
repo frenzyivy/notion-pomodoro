@@ -70,3 +70,26 @@ app.patch("/update-task/:pageId", async (req, res) => {
 app.listen(5000, () => {
   console.log("Backend server running on port 5000");
 });
+
+app.get('/pomodoro-insights', async (req, res) => {
+  try {
+    // 1. Query your Notion Insights database here
+    // Example: Fetch all insights data and return as JSON
+
+    const response = await axios.post(
+      `https://api.notion.com/v1/databases/${22f45b79-a2a6-8096-9555-fff129405a4c}/query`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${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}`,
+          "Notion-Version": "2022-06-28",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json(response.data.results); // Send insights to frontend
+  } catch (err) {
+    res.status(500).json({ error: err.toString() });
+  }
+});
