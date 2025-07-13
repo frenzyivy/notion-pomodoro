@@ -71,25 +71,28 @@ app.listen(5000, () => {
   console.log("Backend server running on port 5000");
 });
 
-app.get('/pomodoro-insights', async (req, res) => {
-  try {
-    // 1. Query your Notion Insights database here
-    // Example: Fetch all insights data and return as JSON
+// Add at the top if not already
+const express = require("express");
+const app = express();
 
-    const response = await axios.post(
-      `https://api.notion.com/v1/databases/${22f45b79-a2a6-8096-9555-fff129405a4c}/query`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${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}`,
-          "Notion-Version": "2022-06-28",
-          "Content-Type": "application/json",
-        },
-      }
-    );
+// Insights API endpoint
+app.get("/pomodoro-insights", async (req, res) => {
+  // Replace below with actual logic for fetching insights from Notion
+  // For now, just send a test response
+  res.json({
+    totalPomos: 10,
+    focusTime: "4h 10m",
+    breakdown: [
+      { category: "Work", pomodoros: 6 },
+      { category: "Study", pomodoros: 4 },
+    ],
+  });
+});
 
-    res.json(response.data.results); // Send insights to frontend
-  } catch (err) {
-    res.status(500).json({ error: err.toString() });
-  }
+// (existing endpoints...)
+
+// At the bottom of your server.js
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Backend server running on port ${PORT}`);
 });
