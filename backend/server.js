@@ -72,27 +72,20 @@ app.listen(5000, () => {
   console.log("Backend server running on port 5000");
 });
 
-// Add at the top if not already
-
-
-// Insights API endpoint
 app.get("/pomodoro-insights", async (req, res) => {
-  // Replace below with actual logic for fetching insights from Notion
-  // For now, just send a test response
-  res.json({
-    totalPomos: 10,
-    focusTime: "4h 10m",
-    breakdown: [
-      { category: "Work", pomodoros: 6 },
-      { category: "Study", pomodoros: 4 },
-    ],
-  });
-});
-
-// (existing endpoints...)
-
-// At the bottom of your server.js
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`);
+  try {
+    // Your logic to fetch and calculate insights from Notion database
+    // Example: Fetch pomodoro logs, count, durations, categories, etc.
+    const insights = { 
+      totalPomos: 10,        // Example data
+      focusTime: "4h 10m", 
+      categories: [
+        { name: "Work", count: 4 },
+        { name: "Study", count: 6 }
+      ]
+    };
+    res.json(insights);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get insights." });
+  }
 });
