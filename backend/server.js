@@ -1,6 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const express = require("express");
+const app = express();
 
 const app = express();
 app.use(cors());
@@ -72,8 +74,7 @@ app.listen(5000, () => {
 });
 
 // Add at the top if not already
-const express = require("express");
-const app = express();
+
 
 // Insights API endpoint
 app.get("/pomodoro-insights", async (req, res) => {
