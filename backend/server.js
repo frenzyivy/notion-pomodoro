@@ -89,3 +89,14 @@ app.get("/pomodoro-insights", async (req, res) => {
     res.status(500).json({ error: "Failed to get insights." });
   }
 });
+
+app.get("/pomodoro-insights", async (req, res) => {
+  try {
+    // TODO: Add logic to fetch & calculate insights from Notion DB here
+
+    // Temporary response for testing:
+    res.json({ message: "Insights endpoint is working!" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch insights." });
+  }
+});
