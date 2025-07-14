@@ -1,6 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+require("dotenv").config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -8,8 +10,7 @@ app.use(express.json());
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const DATABASE_ID = process.env.DATABASE_ID;
 
-
-// GET TASKS FROM NOTION
+// === GET TASKS FROM NOTION ===
 app.post("/tasks", async (req, res) => {
   try {
     const response = await axios.post(
@@ -29,22 +30,17 @@ app.post("/tasks", async (req, res) => {
   }
 });
 
-// UPDATE FINISHED/PLANNED COUNTS IN NOTION
+// === UPDATE FINISHED/PLANNED COUNTS IN NOTION ===
 app.patch("/update-task/:pageId", async (req, res) => {
   const { finished, planned } = req.body;
   const { pageId } = req.params;
 
-  // Build property updates
   let properties = {};
   if (typeof finished === "number") {
-    properties["Finished"] = {
-      number: finished,
-    };
+    properties["Finished"] = { number: finished };
   }
   if (typeof planned === "number") {
-    properties["Planned"] = {
-      number: planned,
-    };
+    properties["Planned"] = { number: planned };
   }
 
   try {
@@ -65,36 +61,61 @@ app.patch("/update-task/:pageId", async (req, res) => {
   }
 });
 
-// START THE SERVER
-app.listen(5000, () => {
-  console.log("Backend server running on port 5000");
-});
-
+// === GET INSIGHTS (EXAMPLE IMPLEMENTATION) ===
 app.get("/pomodoro-insights", async (req, res) => {
   try {
-    // Your logic to fetch and calculate insights from Notion database
-    // Example: Fetch pomodoro logs, count, durations, categories, etc.
-    const insights = { 
-      totalPomos: 10,        // Example data
-      focusTime: "4h 10m", 
-      categories: [
-        { name: "Work", count: 4 },
-        { name: "Study", count: 6 }
-      ]
-    };
-    res.json(insights);
+    // Fetch all tasks and calculate insights
+    const response = await axios.post(
+      `https://api.notion.com/v1/databases/${DATABASE_ID}/query`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${NOTION_API_KEY}`,
+          "Notion-Version": "2022-06-28",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const tasks = response.data.results;
+    const totalPomos = tasks.reduce(
+      (sum, t) => sum + (t.properties?.Finished?.number || 0),
+      0
+    );
+
+    // You can expand these calculations as you wish!
+    const focusTimeMinutes = totalPomos * 25; // assuming 1 pomo = 25min
+    const focusTime =
+      focusTimeMinutes >= 60
+        ? `${Math.floor(focusTimeMinutes / 60)}h ${focusTimeMinutes % 60}m`
+        : `${focusTimeMinutes}m`;
+
+    // Example: category breakdown (optional)
+    const categories = {};
+    tasks.forEach((t) => {
+      const cat =
+        t.properties?.Category?.select?.name ||
+        t.properties?.Type?.select?.name ||
+        "Other";
+      categories[cat] = (categories[cat] || 0) + (t.properties?.Finished?.number || 0);
+    });
+    const categoryArr = Object.entries(categories).map(([name, count]) => ({
+      name,
+      count,
+    }));
+
+    res.json({
+      totalPomos,
+      focusTime,
+      categories: categoryArr,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to get insights." });
   }
 });
 
-app.get("/pomodoro-insights", async (req, res) => {
-  try {
-    // TODO: Add logic to fetch & calculate insights from Notion DB here
-
-    // Temporary response for testing:
-    res.json({ message: "Insights endpoint is working!" });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch insights." });
-  }
+// === START THE SERVER ===
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Backend server running on port ${PORT}`);
 });

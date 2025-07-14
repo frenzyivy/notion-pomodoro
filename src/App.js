@@ -23,19 +23,21 @@ function Pomodoro() {
 
   const timerRef = useRef(null);
 
-  // Fetch tasks from Notion
-  useEffect(() => {
-    async function fetchTasks() {
-      try {
-        const response = await axios.post("https://notion-pomodoro-1.onrender.com/tasks");
-        setTasks(response.data);
-      } catch (err) {
-        console.error("Error fetching Notion tasks:", err);
-      }
+  // ----> 1. Fetch tasks from Notion (function, not just useEffect)
+  async function fetchTasks() {
+    try {
+      const response = await axios.post("https://notion-pomodoro-1.onrender.com/tasks");
+      setTasks(response.data);
+    } catch (err) {
+      console.error("Error fetching Notion tasks:", err);
     }
+  }
+
+  useEffect(() => {
     fetchTasks();
   }, []);
 
+  // ----> 2. Timer logic, including updating task count and refreshing tasks
   useEffect(() => {
     if (isActive) {
       timerRef.current = setInterval(() => {
@@ -116,11 +118,14 @@ function Pomodoro() {
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
+  // ----> 3. Patch to update finished count and refresh tasks
   async function incrementPomodoroForTask(pageId, newFinishedValue) {
     try {
-      await axios.patch("https://notion-pomodoro-1.onrender.com/update-task/${pageId}", {
+      await axios.patch(`https://notion-pomodoro-1.onrender.com/update-task/${pageId}`, {
         finished: newFinishedValue,
       });
+      // Immediately refresh tasks so UI is in sync!
+      await fetchTasks();
     } catch (err) {
       alert("Error updating Pomodoros in Notion!");
       console.error(err);
